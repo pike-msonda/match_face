@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from easyfacenet.simple import facenet
 from scipy import spatial
 import matplotlib.pyplot as plt
@@ -49,4 +50,14 @@ if __name__ == "__main__":
     axes[1, 1].imshow(originalImages[1])
     axes[1, 1].set_title('Original Selfie Image')
     plt.show()
+=======
+import face_recognition as fcr
+if __name__ == "__main__":
+    id_image = fcr.load_image_file('data/id.jpg')
+    selfie_image = fcr.load_image_file('data/index.jpeg')
+    id_encoding = fcr.face_encodings(id_image)[0];
+    selfie_encoding =  fcr.face_encodings(selfie_image)[0];
+    results = fcr.compare_faces([id_encoding], selfie_encoding)
+    print(results)
+>>>>>>> 45736553d645475b9e801186f06287de537fdf94
     import pdb; pdb.set_trace()
