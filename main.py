@@ -1,5 +1,5 @@
-<<<<<<< HEAD
 from easyfacenet.simple import facenet
+import face_recognition as fcr
 from scipy import spatial
 import matplotlib.pyplot as plt
 import cv2
@@ -7,7 +7,7 @@ import numpy as np
 def getFaces():
     return [
         # 'data/face.jpg',
-        'data/face5.jpg',
+        'data/face2.jpg',
         'data/face3.jpg'
     ]
     pass
@@ -18,7 +18,6 @@ def compare_face(images, threshold=0.7):
 
     for i in range(len(images)):
         for j in range(len(images)):
-            import pdb; pdb.set_trace()
             sims[i][j] = (1 - spatial.distance.cosine(emb[i], emb[j]) > threshold)
             scores[i][j] = spatial.distance.cosine(emb[i], emb[j])
             
@@ -33,6 +32,7 @@ def readImages(paths):
 
 if __name__ == "__main__":
     aligned = facenet.align_face(getFaces())
+    emb = facenet.embedding(aligned)
     originalImages = readImages(getFaces())
     comparisons, scores = compare_face(aligned)
     print(scores)
@@ -49,15 +49,10 @@ if __name__ == "__main__":
 
     axes[1, 1].imshow(originalImages[1])
     axes[1, 1].set_title('Original Selfie Image')
-    plt.show()
-=======
-import face_recognition as fcr
-if __name__ == "__main__":
-    id_image = fcr.load_image_file('data/id.jpg')
-    selfie_image = fcr.load_image_file('data/index.jpeg')
-    id_encoding = fcr.face_encodings(id_image)[0];
-    selfie_encoding =  fcr.face_encodings(selfie_image)[0];
-    results = fcr.compare_faces([id_encoding], selfie_encoding)
+
+    id_encoding = fcr.face_encodings(originalImages[0])[0]
+    face_encoding = fcr.face_encodings(originalImages[0])[0]
+    # import pdb; pdb.set_trace()
+    results = fcr.compare_faces([id_encoding], face_encoding)
     print(results)
->>>>>>> 45736553d645475b9e801186f06287de537fdf94
-    import pdb; pdb.set_trace()
+    plt.show()
