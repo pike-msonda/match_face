@@ -14,6 +14,6 @@ services:
     restart: always
     build: ./nginx
     ports:
-      - "80:3007"
+      - "3007:3007"
     depends_on:
       - face_app
