@@ -1,8 +1,5 @@
 from easyfacenet.simple import facenet
-import face_recognition as fcr
 from scipy import spatial
-import matplotlib.pyplot as plt
-import cv2
 import numpy as np
 
 class FaceCompare:
@@ -37,11 +34,5 @@ class FaceCompare:
                 sims[i][j] = (1 - spatial.distance.cosine(emb[i], emb[j]) > self.threshold)
                 scores[i][j] = spatial.distance.cosine(emb[i], emb[j])
         return sims, scores
-
-    def readImages(self, paths):
-        images = []
-        for img in paths:
-            images.append(cv2.resize(cv2.imread(img), (160, 160)))
-        return images
 
     

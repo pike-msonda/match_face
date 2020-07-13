@@ -8,6 +8,7 @@ from flask import jsonify
 import uuid
 
 app = Flask(__name__, instance_relative_config=True)
+
 app.config.from_mapping(
     SECRET_KEY='dev',
     DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
@@ -43,6 +44,8 @@ def save_file(file):
          
 @app.route('/api/match', methods=['GET' ,'POST'])
 def compare():
+    if request.method == 'GET':
+        return "Use post to get results"
     if request.method == 'POST':
         if 'id_image'  and 'selfie_image' not in request.files:
             required = {}
