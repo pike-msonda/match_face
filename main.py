@@ -8,9 +8,8 @@ def getFaces():
     return [
         # 'data/face.jpg',
         'data/face2.jpg',
-        'data/face3.jpg'
+        'data/selfie.jpg'
     ]
-    pass
 def compare_face(images, threshold=0.7):
     emb = facenet.embedding(images)
     sims = np.zeros((len(images), len(images)))
@@ -31,6 +30,7 @@ def readImages(paths):
     return images
 
 if __name__ == "__main__":
+    print(getFaces())
     aligned = facenet.align_face(getFaces())
     emb = facenet.embedding(aligned)
     originalImages = readImages(getFaces())
@@ -52,7 +52,6 @@ if __name__ == "__main__":
 
     id_encoding = fcr.face_encodings(originalImages[0])[0]
     face_encoding = fcr.face_encodings(originalImages[0])[0]
-    # import pdb; pdb.set_trace()
     results = fcr.compare_faces([id_encoding], face_encoding)
     print(results)
     plt.show()

@@ -2,39 +2,66 @@
 import os
 
 from flask import Flask, request
+from face_compare import FaceCompare
+from werkzeug.utils import secure_filename
+from flask import jsonify
+import uuid
 
-def create_app(test_config=None):
-    # create and configure the app
-    app = Flask(__name__, instance_relative_config=True)
-    app.config.from_mapping(
-        SECRET_KEY='dev',
-        DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
-    )
+app = Flask(__name__, instance_relative_config=True)
+app.config.from_mapping(
+    SECRET_KEY='dev',
+    DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
+)
+app.debug = True
+# a simple page that says hello
+UPLOAD_FOLDER = 'data/'
+ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg'}
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-    if test_config is None:
-        # load the instance config, if it exists, when not testing
-        app.config.from_pyfile('config.py', silent=True)
-    else:
-        # load the test config if passed in
-        app.config.from_mapping(test_config)
+@app.route('/')
+def hello():
+    return {
+        "message": "POC for face verification"
+    }
+def remove_images(images):
+    for img in images:
+        os.remove(img)
+    return images
+def params_in(key, params):
+    if key not in params:
+        return key
+    return ''
+     
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+def save_file(file):
+     if file and allowed_file(file.filename):
+         filename = str(uuid.uuid4()) + '.' + secure_filename(file.filename).split('.')[-1]
+         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+         return os.path.join(app.config['UPLOAD_FOLDER'], filename)
+         
+@app.route('/api/match', methods=['GET' ,'POST'])
+def compare():
+    if request.method == 'POST':
+        if 'id_image'  and 'selfie_image' not in request.files:
+            required = {}
+            if 'id_image' not in request.files:
+               required.update({'id_image': 'required'})
+            if 'selfie_image' not in request.files:
+               required.update({'selfie_image': 'required'})
+            return jsonify(required)
+        
+        threshold = request.form.get('threshold', 0.7, type=float)
+        id_image_path = save_file (request.files['id_image'])
+        selfie_image_path = save_file (request.files['selfie_image'])
+        try:
+            face_matcher = FaceCompare(id_image_path, selfie_image_path, threshold)
+            results = face_matcher.compare()
+            if results:
+                remove_images([id_image_path, selfie_image_path])
+                return results
+        except:
+            remove_images([id_image_path, selfie_image_path])
+            return {"error" : " A server error occurred"}    
 
-    # ensure the instance folder exists
-    try:
-        os.makedirs(app.instance_path)
-    except OSError:
-        pass
-
-    # a simple page that says hello
-    @app.route('/')
-    def hello():
-        return {
-            "name": "Pike Msonda"
-        }
-    
-    # @app.route('api/match', methods=['POST'])
-    # def compare():
-    #     if request.method == 'POST':
-
-    
-
-    return app
