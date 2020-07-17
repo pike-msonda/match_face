@@ -1,4 +1,4 @@
-from easyfacenet.simple import facenet
+from facenet.simple.facenet import align_face, embedding
 from scipy import spatial
 import numpy as np
 
@@ -12,7 +12,7 @@ class FaceCompare:
     def compare(self):
         results = {}
         images = [self.id_image, self.selfie_image]
-        aligned = facenet.align_face(images)
+        aligned = align_face(images)
         comparisons, scores = self.distance(aligned)
         results = {
             'data':
@@ -25,7 +25,7 @@ class FaceCompare:
         return results
 
     def distance(self, images):
-        emb = facenet.embedding(images)
+        emb = embedding(images)
         sims = np.zeros((len(images), len(images)))
         scores = np.zeros((len(images), len(images)))
 

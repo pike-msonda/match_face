@@ -19,6 +19,23 @@ UPLOAD_FOLDER = 'data/'
 ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
+
+from werkzeug.exceptions import HTTPException
+
+@app.errorhandler(HTTPException)
+def handle_exception(e):
+    """Return JSON instead of HTML for HTTP errors."""
+    # start with the correct headers and status code from the error
+    response = e.get_response()
+    # replace the body with JSON
+    response.data = json.dumps({
+        "code": e.code,
+        "name": e.name,
+        "description": e.description,
+    })
+    response.content_type = "application/json"
+    return response
+
 @app.route('/')
 def hello():
     return {
@@ -58,13 +75,8 @@ def compare():
         threshold = request.form.get('threshold', 0.7, type=float)
         id_image_path = save_file (request.files['id_image'])
         selfie_image_path = save_file (request.files['selfie_image'])
-        try:
-            face_matcher = FaceCompare(id_image_path, selfie_image_path, threshold)
-            results = face_matcher.compare()
-            if results:
-                remove_images([id_image_path, selfie_image_path])
-                return results
-        except:
+        face_matcher = FaceCompare(id_image_path, selfie_image_path, threshold)
+        results = face_matcher.compare()
+        if results:
             remove_images([id_image_path, selfie_image_path])
-            return {"error" : " A server error occurred"}    
-
+        return results
