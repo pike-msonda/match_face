@@ -1,6 +1,7 @@
 from facenet.simple.facenet import align_face, embedding
 from scipy import spatial
 import numpy as np
+import time
 
 class FaceCompare:
 

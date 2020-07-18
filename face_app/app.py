@@ -6,6 +6,8 @@ from face_compare import FaceCompare
 from werkzeug.utils import secure_filename
 from flask import jsonify
 import uuid
+import json
+from http import HTTPStatus
 
 app = Flask(__name__, instance_relative_config=True)
 
@@ -38,9 +40,10 @@ def handle_exception(e):
 
 @app.route('/')
 def hello():
-    return {
+    return jsonify ({
+        "code": HTTPStatus.OK,
         "message": "POC for face verification"
-    }
+    })
 def remove_images(images):
     for img in images:
         os.remove(img)
@@ -62,15 +65,21 @@ def save_file(file):
 @app.route('/api/match', methods=['GET' ,'POST'])
 def compare():
     if request.method == 'GET':
-        return "Use post to get results"
+        return jsonify ({
+            "code" : HTTPStatus.OK,
+            "message": "Use post for this route."
+        })
     if request.method == 'POST':
-        if 'id_image'  and 'selfie_image' not in request.files:
-            required = {}
+        message = []
+        if 'id_image'  or 'selfie_image' not in request.files:
             if 'id_image' not in request.files:
-               required.update({'id_image': 'required'})
+                message.append('id_image is required')
             if 'selfie_image' not in request.files:
-               required.update({'selfie_image': 'required'})
-            return jsonify(required)
+               message.append('selfie_image is required')
+            return jsonify({
+                "errors": message,
+                "code": HTTPStatus.UNPROCESSABLE_ENTITY
+            })
         
         threshold = request.form.get('threshold', 0.7, type=float)
         id_image_path = save_file (request.files['id_image'])
