@@ -1,4 +1,4 @@
-from facenet.simple.facenet import align_face, embedding
+from facenet.simple.facenet import align_face, embedding, embedding_redis
 from scipy import spatial
 import numpy as np
 import time
@@ -27,6 +27,8 @@ class FaceCompare:
 
     def distance(self, images):
         emb = embedding(images)
+        emb_redis = embedding_redis(images)
+        import pdb; pdb.set_trace()
         sims = np.zeros((len(images), len(images)))
         scores = np.zeros((len(images), len(images)))
 

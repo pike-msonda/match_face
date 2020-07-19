@@ -8,6 +8,7 @@ from flask import jsonify
 import uuid
 import json
 from http import HTTPStatus
+import time
 
 app = Flask(__name__, instance_relative_config=True)
 
@@ -64,6 +65,7 @@ def save_file(file):
          
 @app.route('/api/match', methods=['GET' ,'POST'])
 def compare():
+    start_time =  time.time()
     if request.method == 'GET':
         return jsonify ({
             "code" : HTTPStatus.OK,
@@ -75,17 +77,18 @@ def compare():
             if 'id_image' not in request.files:
                 message.append('id_image is required')
             if 'selfie_image' not in request.files:
-               message.append('selfie_image is required')
-            return jsonify({
-                "errors": message,
-                "code": HTTPStatus.UNPROCESSABLE_ENTITY
-            })
+                message.append('selfie_image is required')
+                return jsonify({
+                    "errors": message,
+                    "code": HTTPStatus.UNPROCESSABLE_ENTITY
+                })
         
         threshold = request.form.get('threshold', 0.7, type=float)
         id_image_path = save_file (request.files['id_image'])
         selfie_image_path = save_file (request.files['selfie_image'])
         face_matcher = FaceCompare(id_image_path, selfie_image_path, threshold)
         results = face_matcher.compare()
+        print("--- %s seconds ---" % (time.time() - start_time))
         if results:
             remove_images([id_image_path, selfie_image_path])
         return results
