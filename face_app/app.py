@@ -63,8 +63,8 @@ def save_file(file):
          file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
          return os.path.join(app.config['UPLOAD_FOLDER'], filename)
          
-@app.route('/api/match', methods=['GET' ,'POST'])
-def compare():
+@app.route('/api/facenet', methods=['GET' ,'POST'])
+def facenet():
     start_time =  time.time()
     if request.method == 'GET':
         return jsonify ({
@@ -87,7 +87,38 @@ def compare():
         id_image_path = save_file (request.files['id_image'])
         selfie_image_path = save_file (request.files['selfie_image'])
         face_matcher = FaceCompare(id_image_path, selfie_image_path, threshold)
-        results = face_matcher.compare()
+        results = face_matcher.facenet()
+        print("--- %s seconds ---" % (time.time() - start_time))
+        if results:
+            remove_images([id_image_path, selfie_image_path])
+        return results
+
+
+@app.route('/api/dlib', methods=['GET' ,'POST'])
+def dlib():
+    start_time =  time.time()
+    if request.method == 'GET':
+        return jsonify ({
+            "code" : HTTPStatus.OK,
+            "message": "Use post for this route."
+        })
+    if request.method == 'POST':
+        message = []
+        if 'id_image'  or 'selfie_image' not in request.files:
+            if 'id_image' not in request.files:
+                message.append('id_image is required')
+            if 'selfie_image' not in request.files:
+                message.append('selfie_image is required')
+                return jsonify({
+                    "errors": message,
+                    "code": HTTPStatus.UNPROCESSABLE_ENTITY
+                })
+        
+        threshold = request.form.get('threshold', 0.7, type=float)
+        id_image_path = save_file (request.files['id_image'])
+        selfie_image_path = save_file (request.files['selfie_image'])
+        face_matcher = FaceCompare(id_image_path, selfie_image_path, threshold)
+        results = face_matcher.dlib()
         print("--- %s seconds ---" % (time.time() - start_time))
         if results:
             remove_images([id_image_path, selfie_image_path])

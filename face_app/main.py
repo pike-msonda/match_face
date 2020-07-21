@@ -9,7 +9,7 @@ def getFaces():
     return [
         # 'data/face.jpg',
         'data/face.jpg',
-        'data/face1.jpg'
+        'data/face2.jpg'
     ]
 def compare_face(images, threshold=0.7):
     emb = facenet.embedding(images)
@@ -27,7 +27,7 @@ def compare_face(images, threshold=0.7):
 def readImages(paths):
     images = []
     for img in paths:
-        images.append(cv2.resize(cv2.imread(img), (160, 160)))
+        images.append(cv2.resize(cv2.imread(img)))
     return images
 
 if __name__ == "__main__":
@@ -40,14 +40,17 @@ if __name__ == "__main__":
     faces = []
     for img_path in getFaces():
         image = fcr.load_image_file(img_path)
-        face_location = fcr.face_locations(image)
-        if len(face_location) <  1:
-            raise Exception("Image has no face, please upload proper image")
+        # face_location = fcr.face_locations(image)
+        # import pdb; pdb.set_trace()
+        # if len(face_location) <  1:
+        #     raise Exception("Image has no face, please upload proper image")
 
-        top, right, bottom, left = fcr.face_locations(image)[0]
-        face = image[top:bottom, left:right]
-        faces.append(face)
+        # top, right, bottom, left = fcr.face_locations(image)[0]
+        # face = image[top:bottom, left:right]
+        faces.append(image)
     # comparisons, scores = compare_face(aligned)
+    # print(fcr.compare_faces([faces[0]], faces[1]))
+    # import pdb; pdb.set_trace()
     # print(scores)
     # print(comparisons)
     # fig, axes = plt.subplots(2, 2)
@@ -64,8 +67,9 @@ if __name__ == "__main__":
     # axes[1, 1].set_title('Original Selfie Image')
 
     id_encoding = fcr.face_encodings(faces[0])[0]
-    face_encoding = fcr.face_encodings(faces[0])[0]
+    face_encoding = fcr.face_encodings(faces[1])[0]
     results = fcr.compare_faces([id_encoding], face_encoding)
+    print(fcr.face_distance([id_encoding], face_encoding))
     print(results)
     import pdb; pdb.set_trace()
     plt.show()
