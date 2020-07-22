@@ -21,10 +21,10 @@ class FaceCompare:
         results = {
             'data':
             {
-                'score': 1 - scores[0][1],
+                'score': round((1 - scores[0][1]),3),
                 'threshold': self.threshold,
                 'verdict': bool(comparisons[0][1]),
-                'time': (time.time() - start_time)
+                'elapsedTime (s)': round((time.time() - start_time), 3)
             }
         }
         return results
@@ -41,10 +41,10 @@ class FaceCompare:
         results = {
             'data':
             {
-                'score': 1 - score[0],
+                'score': round((1 - score[0]),3),
                 'threshold': self.threshold,
                 'verdict': bool(verdict[0]),
-                'time': (time.time() - start_time)
+                'elapsedTime (s)': round((time.time() - start_time), 3)
             }
         }
         return results
