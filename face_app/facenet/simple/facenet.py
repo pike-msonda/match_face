@@ -17,7 +17,7 @@ factor = 0.709  # scale factor
 
 def align_face(images, image_size=160, margin=11):
     with tf.Graph().as_default():
-        sess = tf.Session(config=tf.ConfigProto(log_device_placement=False))
+        sess = tf.compat.v1.Session(config=tf.compat.v1.ConfigProto(log_device_placement=False))
         with sess.as_default():
             pnet, rnet, onet = detect_face.create_mtcnn(sess, None)
 
@@ -57,13 +57,13 @@ def embedding(images):
         print("model downloaded to " + model_path)
 
     with tf.Graph().as_default():
-        with tf.Session() as sess:
+        with tf.compat.v1.Session() as sess:
             facenet.load_model(model_path)
 
             # Get input and output tensors
-            images_placeholder = tf.get_default_graph().get_tensor_by_name("input:0")
-            embeddings = tf.get_default_graph().get_tensor_by_name("embeddings:0")
-            phase_train_placeholder = tf.get_default_graph().get_tensor_by_name("phase_train:0")
+            images_placeholder = tf.compat.v1.get_default_graph().get_tensor_by_name("input:0")
+            embeddings = tf.compat.v1.get_default_graph().get_tensor_by_name("embeddings:0")
+            phase_train_placeholder = tf.compat.v1.get_default_graph().get_tensor_by_name("phase_train:0")
 
             # Run forward pass to calculate embeddings
             feed_dict = {images_placeholder: images,
