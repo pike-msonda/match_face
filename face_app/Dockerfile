@@ -12,9 +12,12 @@ ENV PYTHONUNBUFFERED 1
 RUN pip install --upgrade pip
 RUN pip install -U setuptools
 
+RUN apt-get update \
+    && apt-get -y install curl \
+    cmake
+
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY detect_face.py /usr/local/lib/python3.6/site-packages/easyfacenet/src/align/detect_face.py
 
 RUN python download.py
 
