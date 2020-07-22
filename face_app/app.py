@@ -40,11 +40,13 @@ def handle_exception(e):
     return response
 
 @app.route('/')
-def hello():
+def welcome():
     return jsonify ({
         "code": HTTPStatus.OK,
         "message": "POC for face verification"
     })
+
+
 def remove_images(images):
     for img in images:
         os.remove(img)
@@ -65,7 +67,6 @@ def save_file(file):
          
 @app.route('/api/facenet', methods=['GET' ,'POST'])
 def facenet():
-    start_time =  time.time()
     if request.method == 'GET':
         return jsonify ({
             "code" : HTTPStatus.OK,
@@ -88,15 +89,13 @@ def facenet():
         selfie_image_path = save_file (request.files['selfie_image'])
         face_matcher = FaceCompare(id_image_path, selfie_image_path, threshold)
         results = face_matcher.facenet()
-        print("--- %s seconds ---" % (time.time() - start_time))
         if results:
             remove_images([id_image_path, selfie_image_path])
         return results
 
 
-@app.route('/api/dlib', methods=['GET' ,'POST'])
-def dlib():
-    start_time =  time.time()
+@app.route('/api/resnet', methods=['GET' ,'POST'])
+def resnet():
     if request.method == 'GET':
         return jsonify ({
             "code" : HTTPStatus.OK,
@@ -118,8 +117,7 @@ def dlib():
         id_image_path = save_file (request.files['id_image'])
         selfie_image_path = save_file (request.files['selfie_image'])
         face_matcher = FaceCompare(id_image_path, selfie_image_path, threshold)
-        results = face_matcher.dlib()
-        print("--- %s seconds ---" % (time.time() - start_time))
+        results = face_matcher.resnet()
         if results:
             remove_images([id_image_path, selfie_image_path])
         return results

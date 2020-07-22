@@ -29,14 +29,14 @@ class FaceCompare:
         }
         return results
 
-    def dlib(self):
+    def resnet(self):
         results = {}
         start_time = time.time()
         id_face = self.read_image(self.id_image)
         selfie = self.read_image(self.selfie_image)
-        id_encoding = fcr.face_encodings(id_face)[0]
-        face_encoding = fcr.face_encodings(selfie)[0]
-        verdict = fcr.compare_faces([id_encoding], face_encoding, self.threshold)
+        id_encoding = fcr.face_encodings(id_face, num_jitters=5)[0]
+        face_encoding = fcr.face_encodings(selfie, num_jitters=5)[0]
+        verdict = fcr.compare_faces([id_encoding], face_encoding, (1 - self.threshold))
         score = fcr.face_distance([id_encoding], face_encoding)
         results = {
             'data':
