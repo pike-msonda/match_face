@@ -43,6 +43,7 @@ def align_face(images, image_size=160, margin=11):
                              (image_size, image_size))[:, :, ::-1]
         prewhitened = facenet.prewhiten(aligned)
         img_list.append(prewhitened)
+    
     images = np.stack(img_list)
     return images
 

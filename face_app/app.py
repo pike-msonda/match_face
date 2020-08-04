@@ -6,7 +6,10 @@ from face_compare import FaceCompare
 from werkzeug.utils import secure_filename
 from flask import jsonify
 import uuid
+import PIL.Image as Image
 import json
+import io
+import base64
 from http import HTTPStatus
 import time
 
@@ -55,7 +58,12 @@ def params_in(key, params):
     if key not in params:
         return key
     return ''
-     
+
+def save_image(image):
+    filename = str(uuid.uuid4()) + '.jpg'
+    image.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+    return os.path.join(app.config['UPLOAD_FOLDER'], filename)
+
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -79,11 +87,37 @@ def facenet():
                 message.append('id_image is required')
             if 'selfie_image' not in request.files:
                 message.append('selfie_image is required')
-                return jsonify({
-                    "errors": message,
-                    "code": HTTPStatus.UNPROCESSABLE_ENTITY
-                })
-        
+
+            if len(request.get_data()) > 0:
+                message = []
+                content =  json.loads(request.get_data())
+                if 'id_image' not in content:
+                    message.append('id_image is required')
+                if 'selfie_image' not in content: 
+                    message.append('selfie_image is required')
+
+        if len(message) > 0:
+            return jsonify({
+                "errors": message,
+                "code": HTTPStatus.UNPROCESSABLE_ENTITY
+            })
+
+        if len(request.get_data()) > 0:
+            threshold = 0.7
+            content =  json.loads(request.get_data())
+            id_image = Image.open(io.BytesIO(base64.b64decode(str(content['id_image']))))
+            selfie_image = Image.open(io.BytesIO(base64.b64decode(str(content['selfie_image']))))
+            if 'threshold' in content:
+                threshold = float(content['threshold'])
+
+            id_image_path = save_image(id_image)
+            selfie_image_path = save_image(selfie_image)
+            face_matcher = FaceCompare(id_image_path, selfie_image_path, threshold)
+            results = face_matcher.facenet()
+            if results:
+                remove_images([id_image_path, selfie_image_path])
+            return results
+
         threshold = request.form.get('threshold', 0.7, type=float)
         id_image_path = save_file (request.files['id_image'])
         selfie_image_path = save_file (request.files['selfie_image'])
