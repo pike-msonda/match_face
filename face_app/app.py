@@ -37,7 +37,7 @@ def handle_exception(e):
     response.data = json.dumps({
         "code": e.code,
         "name": e.name,
-        "description": e.description,
+        "description": "The application could not process your request. This could mean that your input has no face or no face was identified please try with an appropriate image",
     })
     response.content_type = "application/json"
     return response
@@ -142,11 +142,37 @@ def resnet():
                 message.append('id_image is required')
             if 'selfie_image' not in request.files:
                 message.append('selfie_image is required')
-                return jsonify({
-                    "errors": message,
-                    "code": HTTPStatus.UNPROCESSABLE_ENTITY
-                })
-        
+
+            if len(request.get_data()) > 0:
+                message = []
+                content =  json.loads(request.get_data())
+                if 'id_image' not in content:
+                    message.append('id_image is required')
+                if 'selfie_image' not in content: 
+                    message.append('selfie_image is required')
+
+        if len(message) > 0:
+            return jsonify({
+                "errors": message,
+                "code": HTTPStatus.UNPROCESSABLE_ENTITY
+            })
+
+        if len(request.get_data()) > 0:
+            threshold = 0.7
+            content =  json.loads(request.get_data())
+            id_image = Image.open(io.BytesIO(base64.b64decode(str(content['id_image']))))
+            selfie_image = Image.open(io.BytesIO(base64.b64decode(str(content['selfie_image']))))
+            if 'threshold' in content:
+                threshold = float(content['threshold'])
+
+            id_image_path = save_image(id_image)
+            selfie_image_path = save_image(selfie_image)
+            face_matcher = FaceCompare(id_image_path, selfie_image_path, threshold)
+            results = face_matcher.resnet()
+            if results:
+                remove_images([id_image_path, selfie_image_path])
+            return results
+
         threshold = request.form.get('threshold', 0.7, type=float)
         id_image_path = save_file (request.files['id_image'])
         selfie_image_path = save_file (request.files['selfie_image'])
